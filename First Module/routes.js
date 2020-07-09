@@ -3,6 +3,7 @@ const requestHandler = (req, res) => {
   const url = req.url;
   const method = req.method;
   if (url === "/") {
+    console.log(url);
     res.setHeader("Content-Type", "text/html");
     res.write(
       "<html><head><title>Form</title></head><body><form action='/message' method='POST'><input type='text' name='message'/><button type='submit'>Send Request</button></form></body></html>"
