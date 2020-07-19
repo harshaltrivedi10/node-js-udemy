@@ -3,6 +3,8 @@ const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
 
+const db = require("./util/database");
+
 const app = express();
 
 app.set("view engine", "ejs");
