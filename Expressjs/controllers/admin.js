@@ -1,4 +1,5 @@
-const Product = require("../models/product.js");
+const mongodb = require("mongodb");
+const Product = require("../models/product");
 
 exports.getAddProduct = (req, res, next) => {
   //   send response
@@ -14,17 +15,35 @@ exports.postAddProduct = (req, res, next) => {
   const description = req.body.description;
   const price = req.body.price;
   const imageUrl = req.body.imageUrl;
-  req.user
-    .createProduct({
-      title,
-      description,
-      imageUrl,
-      price,
-    })
+  const product = new Product(
+    title,
+    imageUrl,
+    description,
+    price,
+    null,
+    req.user._id
+  );
+  product
+    .save()
     .then(() => {
       res.redirect("/admin/products");
     })
     .catch((error) => console.log(error));
+};
+
+exports.getAdminProducts = (req, res, next) => {
+  //   send response
+  Product.fetchAll()
+    .then((products) => {
+      res.render("admin/products", {
+        prods: products,
+        pageTitle: "Admin Products",
+        path: "/admin/products",
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 };
 
 exports.getEditProduct = (req, res, next) => {
@@ -33,10 +52,8 @@ exports.getEditProduct = (req, res, next) => {
     return res.redirect("/");
   }
   const productId = req.params.productId;
-  req.user
-    .getProducts({ where: { id: productId } })
-    .then((products) => {
-      const product = products[0];
+  Product.findById(productId)
+    .then((product) => {
       if (!product) {
         return res.redirect("/");
       }
@@ -57,45 +74,27 @@ exports.postEditProduct = (req, res, next) => {
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
 
-  Product.findByPk(productId)
-    .then((product) => {
-      product.title = updatedTitle;
-      product.description = updatedDescription;
-      product.price = updatedPrice;
-      product.imageUrl = updatedImageUrl;
-      // save method either saves a new product (if it doesn't exist) or updates the product information
-      return product.save();
-    })
+  const product = new Product(
+    updatedTitle,
+    updatedImageUrl,
+    updatedDescription,
+    updatedPrice,
+    new mongodb.ObjectID(productId)
+  );
+  // save method either saves a new product (if it doesn't exist) or updates the product information
+  return product
+    .save()
     .then(() => {
       res.redirect("/admin/products");
     })
     .catch((error) => console.log(error));
 };
 
-exports.getAdminProducts = (req, res, next) => {
-  //   send response
-  req.user
-    .getProducts()
-    .then((products) => {
-      res.render("admin/products", {
-        prods: products,
-        pageTitle: "Admin Products",
-        path: "/admin/products",
-      });
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-};
-
 exports.deleteProduct = (req, res, next) => {
   const productId = req.body.productId;
-  Product.findByPk(productId)
-    .then((product) => {
-      return product.destroy();
-    })
+  Product.deleteById(productId)
     .then(() => {
       res.redirect("/admin/products");
     })
-    .catch();
+    .catch((error) => console.log(error));
 };
