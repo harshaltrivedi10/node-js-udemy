@@ -2,7 +2,7 @@ const path = require("path");
 
 const express = require("express");
 const bodyParser = require("body-parser");
-const mongoConnect = require("./util/database").mongoConnect;
+const mongoose = require("mongoose");
 
 const app = express();
 
@@ -20,9 +20,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use((req, res, next) => {
-  User.findById("5f1640815f56b755e9993389")
+  User.findById("5f1deb631e1b6b51ccd4c7a4")
     .then((user) => {
-      req.user = new User(user.name, user.email, user.cart, user._id);
+      req.user = user;
       next();
     })
     .catch((error) => console.log(user));
@@ -33,6 +33,26 @@ app.use(shopRoutes);
 
 app.use(errorController.pageNotFound);
 
-mongoConnect(() => {
-  app.listen(3000);
-});
+mongoose
+  .connect("mongodb+srv://harshal:Harshal1!@cluster0-2vfz0.mongodb.net/shop", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then((result) => {
+    User.findOne()
+      .then((user) => {
+        if (!user) {
+          const user = new User({
+            name: "Harshal",
+            email: "test@test.com",
+            cart: {
+              items: [],
+            },
+          });
+          user.save();
+        }
+      })
+      .catch((error) => console.log(error));
+    app.listen(3000);
+  })
+  .catch((error) => console.log(error));

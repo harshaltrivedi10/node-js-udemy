@@ -1,73 +1,90 @@
-const mongodb = require("mongodb");
-const getDb = require("../util/database").getDB;
+const mongoose = require("mongoose");
 
-class Product {
-  constructor(title, imageUrl, description, price, id, userId) {
-    this.title = title;
-    this.price = price;
-    this.description = description;
-    this.imageUrl = imageUrl;
-    this._id = id;
-    this.userId = userId;
-  }
+const Schema = mongoose.Schema;
 
-  save() {
-    const db = getDb();
-    let dbOp;
-    if (this._id) {
-      // update
-      dbOp = db
-        .collection("products")
-        .updateOne({ _id: this._id }, { $set: this });
-    } else {
-      dbOp = db.collection("products").insertOne(this);
-    }
-    return dbOp
-      .then((result) => console.log(result))
-      .catch((error) => console.log(error));
-  }
+const productSchema = new Schema({
+  title: { type: String, required: true },
+  imageUrl: { type: String, required: true },
+  description: { type: String, required: true },
+  price: { type: Number, required: true },
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+});
 
-  static fetchAll() {
-    const db = getDb();
-    // find returns a cursor which is a controller / handle. In order to get elements, toArray() is chained.
-    return db
-      .collection("products")
-      .find()
-      .toArray()
-      .then((products) => {
-        console.log(products);
-        return products;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }
+module.exports = mongoose.model("Product", productSchema);
+// const mongodb = require("mongodb");
+// const getDb = require("../util/database").getDB;
 
-  static findById(id) {
-    const db = getDb();
-    //  here too the find() provides a cursor and as we have only one matching product for the given filter, next would give us the very next element
-    return db
-      .collection("products")
-      .find({ _id: new mongodb.ObjectID(id) })
-      .next()
-      .then((product) => {
-        return product;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }
+// class Product {
+//   constructor(title, imageUrl, description, price, id, userId) {
+//     this.title = title;
+//     this.price = price;
+//     this.description = description;
+//     this.imageUrl = imageUrl;
+//     this._id = id;
+//     this.userId = userId;
+//   }
 
-  static deleteById(id) {
-    const db = getDb();
+//   save() {
+//     const db = getDb();
+//     let dbOp;
+//     if (this._id) {
+//       // update
+//       dbOp = db
+//         .collection("products")
+//         .updateOne({ _id: this._id }, { $set: this });
+//     } else {
+//       dbOp = db.collection("products").insertOne(this);
+//     }
+//     return dbOp
+//       .then((result) => console.log(result))
+//       .catch((error) => console.log(error));
+//   }
 
-    return db
-      .collection("products")
-      .deleteOne({ _id: new mongodb.ObjectID(id) })
-      .then(() => {
-        console.log("Deleted");
-      })
-      .catch((error) => console.log(error));
-  }
-}
-module.exports = Product;
+//   static fetchAll() {
+//     const db = getDb();
+//     // find returns a cursor which is a controller / handle. In order to get elements, toArray() is chained.
+//     return db
+//       .collection("products")
+//       .find()
+//       .toArray()
+//       .then((products) => {
+//         console.log(products);
+//         return products;
+//       })
+//       .catch((error) => {
+//         console.log(error);
+//       });
+//   }
+
+//   static findById(id) {
+//     const db = getDb();
+//     //  here too the find() provides a cursor and as we have only one matching product for the given filter, next would give us the very next element
+//     return db
+//       .collection("products")
+//       .find({ _id: new mongodb.ObjectID(id) })
+//       .next()
+//       .then((product) => {
+//         return product;
+//       })
+//       .catch((error) => {
+//         console.log(error);
+//       });
+//   }
+
+//   static deleteById(id) {
+//     const db = getDb();
+
+//     return db
+//       .collection("products")
+//       .deleteOne({ _id: new mongodb.ObjectID(id) })
+//       .then(() => {
+//         console.log("Deleted");
+//       })
+//       .catch((error) => console.log(error));
+//   }
+// }
+// module.exports = Product;

@@ -15,14 +15,13 @@ exports.postAddProduct = (req, res, next) => {
   const description = req.body.description;
   const price = req.body.price;
   const imageUrl = req.body.imageUrl;
-  const product = new Product(
+  const product = new Product({
     title,
     imageUrl,
     description,
     price,
-    null,
-    req.user._id
-  );
+    userId: req.user,
+  });
   product
     .save()
     .then(() => {
@@ -33,7 +32,9 @@ exports.postAddProduct = (req, res, next) => {
 
 exports.getAdminProducts = (req, res, next) => {
   //   send response
-  Product.fetchAll()
+  Product.find()
+    // fetach related fields
+    // .populate("userId")
     .then((products) => {
       res.render("admin/products", {
         prods: products,
@@ -74,16 +75,15 @@ exports.postEditProduct = (req, res, next) => {
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
 
-  const product = new Product(
-    updatedTitle,
-    updatedImageUrl,
-    updatedDescription,
-    updatedPrice,
-    new mongodb.ObjectID(productId)
-  );
-  // save method either saves a new product (if it doesn't exist) or updates the product information
-  return product
-    .save()
+  Product.findById(productId)
+    .then((product) => {
+      product.title = updatedTitle;
+      product.description = updatedDescription;
+      product.imageUrl = updatedImageUrl;
+      product.price = updatedPrice;
+      // save method either saves a new product (if it doesn't exist) or updates the product information
+      return product.save();
+    })
     .then(() => {
       res.redirect("/admin/products");
     })
@@ -92,7 +92,7 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.deleteProduct = (req, res, next) => {
   const productId = req.body.productId;
-  Product.deleteById(productId)
+  Product.findByIdAndRemove(productId)
     .then(() => {
       res.redirect("/admin/products");
     })
