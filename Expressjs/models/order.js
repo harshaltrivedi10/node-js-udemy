@@ -19,11 +19,11 @@ const orderSchema = new Schema({
     userId: {
       type: Schema.Types.ObjectId,
       required: true,
+      ref: "User",
     },
-    name: {
+    email: {
       type: String,
       required: true,
-      ref: "User",
     },
   },
 });
