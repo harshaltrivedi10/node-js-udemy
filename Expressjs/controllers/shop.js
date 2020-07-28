@@ -1,6 +1,5 @@
 const Product = require("../models/product");
 const Order = require("../models/order");
-const order = require("../models/order");
 
 exports.getIndex = (req, res, next) => {
   Product.find()
@@ -9,6 +8,7 @@ exports.getIndex = (req, res, next) => {
         prods: products,
         pageTitle: "Shop",
         path: "/",
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((error) => console.log(error));
@@ -22,6 +22,7 @@ exports.getProducts = (req, res, next) => {
         prods: products,
         pageTitle: "All Products",
         path: "/products",
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((error) => console.log(error));
@@ -35,6 +36,7 @@ exports.getProduct = (req, res, next) => {
         product: product,
         pageTitle: product.title,
         path: "/products",
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((error) => console.log(error));
@@ -51,6 +53,7 @@ exports.getCart = (req, res, next) => {
         pageTitle: "Your Cart",
         path: "/cart",
         products,
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((error) => console.log(error));
@@ -86,6 +89,7 @@ exports.getOrders = (req, res, next) => {
         pageTitle: "Your orders",
         path: "/orders",
         orders,
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((error) => console.log(error));
