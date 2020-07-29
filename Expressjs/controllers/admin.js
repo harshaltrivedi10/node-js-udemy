@@ -32,7 +32,7 @@ exports.postAddProduct = (req, res, next) => {
 
 exports.getAdminProducts = (req, res, next) => {
   //   send response
-  Product.find()
+  Product.find({ userId: req.user._id })
     // fetach related fields
     // .populate("userId")
     .then((products) => {
@@ -77,22 +77,24 @@ exports.postEditProduct = (req, res, next) => {
 
   Product.findById(productId)
     .then((product) => {
+      if (product.userId.toString() !== req.user._id.toString()) {
+        return res.redirect("/");
+      }
       product.title = updatedTitle;
       product.description = updatedDescription;
       product.imageUrl = updatedImageUrl;
       product.price = updatedPrice;
       // save method either saves a new product (if it doesn't exist) or updates the product information
-      return product.save();
-    })
-    .then(() => {
-      res.redirect("/admin/products");
+      return product.save().then(() => {
+        res.redirect("/admin/products");
+      });
     })
     .catch((error) => console.log(error));
 };
 
 exports.deleteProduct = (req, res, next) => {
   const productId = req.body.productId;
-  Product.findByIdAndRemove(productId)
+  Product.deleteOne({ _id: productId, userId: req.user._id })
     .then(() => {
       res.redirect("/admin/products");
     })
